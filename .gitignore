@@ -1,7 +1,9 @@
 brain-tumor-data/*
 tfrecord-data/*
+checkpoints/*
 
 !brain-tumor-data/.gitkeep
 !tfrecord-data/.gitkeep
+!checkpoints/.gitkeep
 
 .DS_Store
