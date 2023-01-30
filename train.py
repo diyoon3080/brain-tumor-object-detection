@@ -1,8 +1,7 @@
-from absl import app, flags, logging
+from absl import app, flags
 from absl.flags import FLAGS
 
 import tensorflow as tf
-import numpy as np
 import time
 from tensorflow.keras.callbacks import (
     ReduceLROnPlateau,
@@ -11,7 +10,7 @@ from tensorflow.keras.callbacks import (
     TensorBoard
 )
 from yolov3_minimal import (
-    YoloV3, YoloV3Tiny, YoloLoss,
+    YoloV3, YoloLoss,
     yolo_anchors, yolo_anchor_masks,
     freeze_all, load_tfrecord_dataset, transform_images, transform_targets
 )
@@ -68,10 +67,7 @@ def main(_argv):
     ]
 
     start_time = time.time()
-    history = model.fit(train_dataset,
-                        epochs=FLAGS.epochs,
-                        callbacks=callbacks,
-                        validation_data=val_dataset)
+    model.fit(train_dataset, epochs=FLAGS.epochs, callbacks=callbacks, validation_data=val_dataset)
     end_time = time.time() - start_time
     print(f'Total Training Time: {end_time}')
 
