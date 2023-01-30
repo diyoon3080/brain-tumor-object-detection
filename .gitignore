@@ -2,6 +2,8 @@ brain-tumor-data/*
 tfrecord-data/*
 checkpoints/*
 
+logs/
+
 !brain-tumor-data/.gitkeep
 !tfrecord-data/.gitkeep
 !checkpoints/.gitkeep
