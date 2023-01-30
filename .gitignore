@@ -1,0 +1,7 @@
+brain-tumor-data/*
+tfrecord-data/*
+
+!brain-tumor-data/.gitkeep
+!tfrecord-data/.gitkeep
+
+.DS_Store
