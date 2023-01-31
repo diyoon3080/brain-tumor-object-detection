@@ -11,41 +11,43 @@ from yolov3_minimal import (
 
 flags.DEFINE_string('weights', '', 'path to weights file')
 flags.DEFINE_integer('size', 256, 'resize images to')
-flags.DEFINE_string('tfrecord', './tfrecord-data/axial-_brain_val.tfrecord', 'path to tfrecord file')
-flags.DEFINE_string('output', './output.jpg', 'path to output image')
+flags.DEFINE_string('tfrecord', './tfrecord-data/axial_brain_val.tfrecord', 'path to tfrecord file')
+flags.DEFINE_string('output', './output-imgs', 'path to output images directory')
 
 def main(_argv):
 
-    yolo = YoloV3(classes=FLAGS.num_classes)
+    yolo = YoloV3(size=FLAGS.size, classes=2)
 
     yolo.load_weights(FLAGS.weights).expect_partial()
     logging.info('weights loaded')
 
     class_names = ['negative', 'positive']
 
-    dataset = load_tfrecord_dataset(
-        FLAGS.tfrecord, FLAGS.classes, FLAGS.size)
-    dataset = dataset.shuffle(512)
-    img_raw, _label = next(iter(dataset.take(1)))
+    dataset = load_tfrecord_dataset(FLAGS.tfrecord)
 
-    img = tf.expand_dims(img_raw, 0)
-    img = transform_images(img, FLAGS.size)
+    for input_idx, (img_raw, _label) in enumerate(dataset):
 
-    t1 = time.time()
-    boxes, scores, classes, nums = yolo(img)
-    t2 = time.time()
-    logging.info('time: {}'.format(t2 - t1))
+        img = tf.expand_dims(img_raw, 0)
+        img = transform_images(img, FLAGS.size)
 
-    logging.info('detections:')
-    for i in range(nums[0]):
-        logging.info('\t{}, {}, {}'.format(class_names[int(classes[0][i])],
-                                           np.array(scores[0][i]),
-                                           np.array(boxes[0][i])))
+        t1 = time.time()
+        boxes, scores, classes, nums = yolo(img)
+        t2 = time.time()
+        logging.info('inference time: {}'.format(t2 - t1))
 
-    img = cv2.cvtColor(img_raw.numpy(), cv2.COLOR_RGB2BGR)
-    img = draw_outputs(img, (boxes, scores, classes, nums), class_names)
-    cv2.imwrite(FLAGS.output, img)
-    logging.info('output saved to: {}'.format(FLAGS.output))
+        if nums[0]:
+
+            logging.info('detections:')
+            for i in range(nums[0]):
+                logging.info('\t{}, {}, {}'.format(class_names[int(classes[0][i])],
+                                                np.array(scores[0][i]),
+                                                np.array(boxes[0][i])))
+
+            img = cv2.cvtColor(img_raw.numpy(), cv2.COLOR_RGB2BGR)
+            img = draw_outputs(img, (boxes, scores, classes, nums), class_names)
+            output_filename = f"{FLAGS.output}/{input_idx}.jpg"
+            cv2.imwrite(output_filename, img)
+            logging.info('output saved to: {}'.format(output_filename))
 
 
 if __name__ == '__main__':
